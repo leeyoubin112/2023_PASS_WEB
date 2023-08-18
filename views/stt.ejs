@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 부트스트랩 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <!-- Font Awesome 키트 -->
+  <script src="https://kit.fontawesome.com/85affc975d.js" crossorigin="anonymous"></script>
+  <!-- 부트스트랩 번들 (Popper.js 포함) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <!-- 'header' 파일의 내용을 포함 -->
+    <%- include('./header') %>
+  </header>
+  <main>
+    <br>
+    <div class="container text-center">
+      <form class="row">
+        <div class="col-md-6">
+          <!-- 음성 인식 결과를 표시하는 입력 필드 -->
+          <input type="text" class="form-control" id="result">
+        </div>
+        <div class="col-auto">
+          <!-- 마이크 아이콘 -->
+          <i class="fa-solid fa-microphone fa-fade fa-xl"></i>
+        </div>
+      </form>
+    </div>
+  </main>
+</body>
+</html>
+
+<script>
+  // 변수 초기화 및 SpeechRecognition 설정
+  let mic = 1;
+  window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let result = document.getElementById('result');
+  let text = '';
+  let recognition = new SpeechRecognition();
+  recognition.interimResults = true; // 음절을 연속으로 인식
+  recognition.lang = 'ko-KR'; // 한국어로 설정
+  
+  // 음성 인식 시작
+  recognition.start();
+  
+  // 음성 인식이 시작되면 실행되는 이벤트
+  recognition.onstart = function() {
+    result.value = ''; // 입력 필드 초기화
+  };
+  
+  // 음성 인식 결과가 있을 때 실행되는 이벤트
+  recognition.onresult = function(e) {
+    // 인식된 텍스트 결합 및 표시
+    let texts = Array.from(e.results).map(results => results[0].transcript).join("");
+    result.value = texts;
+  };
+  
+  // 음성 인식이 종료되면 실행되는 이벤트
+  recognition.onend = function() {
+    let command = result.value;
+    // 명령에서 공백 제거
+    command = command.replace(" ", "");
+    
+    // 유효한 명령 확인
+    if (command.length > 0) {
+      // 인식된 명령을 기반으로 URL 열기
+      let url = '';
+      if (command.includes('열어')) {
+        if (command.includes('네이버')) {
+          url = 'http://naver.com';
+        } else if (command.includes('다음')) {
+          url = 'http://daum.net';
+        } else if (command.includes('유튜브')) {
+          url = 'http://youtube.com';
+        } else {
+          url = '';
+        }
+        // URL을 새 탭에서 열기
+        open(url, target = '_blank');
+      }
+    }
+    
+    // 음성 인식 다시 시작
+    recognition.start();
+  };
+</script>
